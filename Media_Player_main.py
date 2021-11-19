@@ -47,6 +47,7 @@ from numpy.fft import fft, fftfreq, ifft
 from scipy.fftpack import fft, ifft
 from scipy import signal
 import cmath
+import cv2
 
 
 
@@ -118,7 +119,6 @@ class Ui_MainWindow(object):
         self.PlayButton.setObjectName("PlayButton")
         self.OpenFileButton = QtWidgets.QPushButton(self.page_3)
         self.OpenFileButton.setGeometry(QtCore.QRect(0, 0, 61, 23))
-      #  self.OpenFileButton.setStyleSheet("radius:\"3\";")
         self.OpenFileButton.setObjectName("OpenFileButton")
         self.PauseButton = QtWidgets.QPushButton(self.page_3)
         self.PauseButton.setGeometry(QtCore.QRect(0, 80, 61, 23))
@@ -356,7 +356,13 @@ class Ui_MainWindow(object):
         self.MainControl.setItemText(self.MainControl.indexOf(self.page_3), _translate("MainWindow", "Page 1"))
         self.MainVolumeLabel.setText(_translate("MainWindow", "Volume"))
         self.SpectroLabel.setText(_translate("MainWindow", "Spectro"))
+        self.PaletteComboBox.setCurrentText(_translate("MainWindow", "Palettes"))
         self.PaletteComboBox.setItemText(0, _translate("MainWindow", "Palettes"))
+        self.PaletteComboBox.setItemText(1, _translate("MainWindow", 'gray'))
+        self.PaletteComboBox.setItemText(2, _translate("MainWindow", 'hsv'))
+        self.PaletteComboBox.setItemText(3, _translate("MainWindow", 'summer'))
+        self.PaletteComboBox.setItemText(4, _translate("MainWindow", 'viridis'))
+        self.PaletteComboBox.setItemText(5, _translate("MainWindow", 'turbo'))
         self.MainControl.setItemText(self.MainControl.indexOf(self.page_4), _translate("MainWindow", "Page 2"))
         self.ImageOFInstHolder.setText(_translate("MainWindow", "Image of Instr."))
         self.EqualizerControl.setItemText(self.EqualizerControl.indexOf(self.page_5), _translate("MainWindow", "Page 1"))
@@ -375,12 +381,38 @@ class Ui_MainWindow(object):
         self.VolumeLabel_9.setText(_translate("MainWindow", "Label3"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Tab 1"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Tab 2"))
+
+        #defining globals
+        #setting the dafault to gary
+        self.paletteName='viridis'
+        self.rmin = 0
+        self.rmax = 256
+        self.gmin = 0
+        self.gmax = 256
+        self.bmin = 0
+        self.bmax = 256
+        self.spectroON=0
+
+        #adding palettes to palette combobox
+        self.PaletteComboBox.addItem('hsv')
+        self.PaletteComboBox.addItem('summer')
+        self.PaletteComboBox.addItem('viridis')
+        self.PaletteComboBox.addItem('turbo')
+        self.PaletteComboBox.addItem('gray')
+        
         
         #connecting buttons
         self.OpenFileButton.clicked.connect(lambda: self.open_file())
         self.PauseButton.clicked.connect(lambda: self.pause_music())
         self.PlayButton.clicked.connect(lambda: self.play_music())
         self.FasterButton.clicked.connect(lambda: self.faster_audio())
+        self.SpectroButton.clicked.connect(lambda: self.runSpectro())
+        self.Spec_MaxSlider.valueChanged.connect(lambda: self.maxSlider(self.Spec_MaxSlider.value()))
+        self.Spec_minSLider.valueChanged.connect(lambda: self.maxSlider(self.Spec_minSLider.value()))
+
+        #connecting combobox 
+        self.PaletteComboBox.currentTextChanged.connect(lambda: self.paletteComboBox())
+
 
 
 
@@ -405,6 +437,8 @@ class Ui_MainWindow(object):
         self.player.setMedia(content)
         self.play_music()
         self.read_audio_data()
+        if (self.spectroON == 1):
+            self.runSpectro()
         print(content)
         
     def play_music(self):
@@ -444,6 +478,55 @@ class Ui_MainWindow(object):
 #         self.timer1.setInterval(100)
 #         self.timer1.start()
 # =============================================================================
+
+#Spectro 
+
+#comboBox 
+
+    def paletteComboBox(self):
+        self.paletteName=self.PaletteComboBox.currentText()
+        self.runSpectro()
+        
+    def maxSlider(self , value):
+        slider_value=value
+        self.rmax=slider_value 
+        self.gmax=slider_value   
+        self.bmax=slider_value 
+        self.runSpectro()
+        
+
+    def minSlider(self , value):
+        slider_value=value
+        self.rmin=slider_value 
+        self.gmin=slider_value  
+        self.bmin=slider_value
+        self.runSpectro()
+
+    def figToImg(self ,fig ,dpi = 90):
+        buf = io.BytesIO()
+        fig.savefig(buf, format="jpeg", dpi=dpi)
+        buf.seek(0)
+        arrimg = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+        print(buf.getvalue())
+        buf.close()
+        self.img = cv2.imdecode(arrimg, 1)
+        self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
+        return self.img
+    
+    def runSpectro(self):
+        self.spectroON=1   
+        fig=plt.figure()
+        self.spec_gram = plt.specgram(self.audio_amplitude, Fs=200 ,cmap=self.paletteName)
+        self.plotGraph = pyqtgraph.PlotItem()
+        pyqtgraph.PlotItem.enableAutoScale(self.plotGraph)
+        pyqtgraph.PlotItem.hideAxis(self.plotGraph,'left')
+        pyqtgraph.PlotItem.hideAxis(self.plotGraph,'bottom')
+        self.SpectroChannel.setCentralItem(self.plotGraph)
+        self.img=self.figToImg(fig)
+        self.img = np.rot90(self.img , k=1 , axes= (1,0))
+        self.image = pyqtgraph.ImageItem(self.img)
+        self.image.setLevels([[ self.rmin , self.rmax] , [ self.gmin , self.gmax], [ self.bmin , self.bmax]])
+        self.plotGraph.addItem(self.image)
         
 if __name__ == "__main__": 
     import sys
