@@ -208,7 +208,7 @@ class Ui_MainWindow(object):
         self.SpectroChannel = PlotWidget(self.splitter)
         self.SpectroChannel.setObjectName("SpectroChannel")
         self.verticalLayout.addWidget(self.widget)
-        self.Equalizer_5 = QtWidgets.QWidget(self.layoutWidget)
+        self.Equalizer_5 = QtWidgets.QWidget(self.horizontalLayout)
         self.Equalizer_5.setObjectName("Equalizer_5")
         self.EqualizerControl = QtWidgets.QToolBox(self.Equalizer_5)
         self.EqualizerControl.setGeometry(QtCore.QRect(10, 20, 91, 171))
