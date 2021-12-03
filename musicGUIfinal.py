@@ -729,11 +729,12 @@ class Ui_MainWindow(object):
         self.timer = QtCore.QTimer()
         self.timerInterval = 100
         self.update_index=0
-        
+        self.update=0
+
         #configuration of main graph plot 
         self.p=self.MainGraph.addPlot()   
         self.p.setLimits(xMin=0)
-        self.p.setXRange(0, 0.5, padding=0)     
+        self.p.setXRange(0, 0.125, padding=0)     
 
         self.curve = self.p.plot()
         self.curve.setData([0],[0])
@@ -814,11 +815,17 @@ class Ui_MainWindow(object):
 
     def update_plot(self,time,amp):
         """updates plotted points according to the playing audio"""
-        
-        max_t=self.last_plotted()
-        self.p.setXRange(max_t-0.5, max_t, padding=0) 
-        self.update_index=self.audio_time.index(self.player.position()/self.sampling_rate)
-        self.curve.setData(self.audio_time[0:self.update_index], self.audio_amplitude[0:self.update_index],pen='blue')
+        try:
+         max_t=self.last_plotted()
+         self.p.setXRange(max_t-0.125, max_t, padding=0) 
+        except:
+            pass
+        self.update=self.update+1000
+        if self.update+1000>len(time):
+            self.update=0
+            # self.play_music()
+            
+        self.curve.setData(time[0:self.update], amp[0:self.update],pen='blue')
 
 #Spectro 
 
