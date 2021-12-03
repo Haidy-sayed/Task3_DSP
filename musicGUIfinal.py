@@ -105,8 +105,8 @@ class Ui_MainWindow(object):
         MainWindow.resize(1000, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName("tabWidget")
         self.tab_5 = QtWidgets.QWidget()
@@ -527,7 +527,7 @@ class Ui_MainWindow(object):
         self.pushButton_5.setObjectName("pushButton_5")
         self.stackedWidget.addWidget(self.page_24)
         self.tabWidget.addTab(self.tab_6, "")
-        self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.horizontalLayout.addWidget(self.tabWidget)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1000, 26))
@@ -751,7 +751,7 @@ class Ui_MainWindow(object):
         self.player.setMedia(content)
         self.read_audio_data()
         self.play_music()
-        self.runSpectro()
+        
         
     def play_music(self):
         """plays the chosen music file"""
@@ -826,6 +826,8 @@ class Ui_MainWindow(object):
             # self.play_music()
             
         self.curve.setData(time[0:self.update], amp[0:self.update],pen='blue')
+        if (self.spectroON == 1):
+            self.runSpectro()
 
 #Spectro 
 
